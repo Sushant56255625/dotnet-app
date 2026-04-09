@@ -8,8 +8,8 @@ builder.Services.AddControllers();
 builder.Services.AddControllersWithViews(); // 👈 for MVC
 
 // Add DbContext
-//builder.Services.AddDbContext<AppDbContext>(options =>
-    //options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
+builder.Services.AddDbContext<AppDbContext>(options =>
+    options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
 // Swagger
 builder.Services.AddEndpointsApiExplorer();
