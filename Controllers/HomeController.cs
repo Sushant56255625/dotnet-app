@@ -1,16 +1,23 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using TestingApplication.Models;
-using System.Text.Json;
 
 namespace TestingApplication.Controllers
 {
     public class HomeController : Controller
     {
+        private string GetBaseUrl()
+        {
+            return $"{Request.Scheme}://{Request.Host}";
+        }
+
         public async Task<IActionResult> Index()
         {
             var client = new HttpClient();
 
-            var employees = await client.GetFromJsonAsync<List<Employee>>("https://localhost:7282/api/employee");
+            var baseUrl = GetBaseUrl();
+
+            var employees = await client.GetFromJsonAsync<List<Employee>>(
+                $"{baseUrl}/api/employee");
 
             return View(employees);
         }
@@ -25,7 +32,10 @@ namespace TestingApplication.Controllers
         {
             var client = new HttpClient();
 
-            var response = await client.PostAsJsonAsync("https://localhost:7282/api/employee", emp);
+            var baseUrl = GetBaseUrl();
+
+            var response = await client.PostAsJsonAsync(
+                $"{baseUrl}/api/employee", emp);
 
             if (response.IsSuccessStatusCode)
             {
@@ -39,10 +49,11 @@ namespace TestingApplication.Controllers
         {
             var client = new HttpClient();
 
-            await client.DeleteAsync($"https://localhost:7282/api/employee/{id}");
+            var baseUrl = GetBaseUrl();
+
+            await client.DeleteAsync($"{baseUrl}/api/employee/{id}");
 
             return RedirectToAction("Index");
         }
     }
 }
-
