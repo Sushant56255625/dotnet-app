@@ -1,24 +1,22 @@
-﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
+using TestingApplication.Data;
 using TestingApplication.Models;
 
 namespace TestingApplication.Controllers
 {
     public class HomeController : Controller
     {
-        private string GetBaseUrl()
+        private readonly AppDbContext _context;
+
+        public HomeController(AppDbContext context)
         {
-            return $"{Request.Scheme}://{Request.Host}";
+            _context = context;
         }
 
         public async Task<IActionResult> Index()
         {
-            var client = new HttpClient();
-
-            var baseUrl = GetBaseUrl();
-
-            var employees = await client.GetFromJsonAsync<List<Employee>>(
-                $"{baseUrl}/api/employee");
-
+            var employees = await _context.EmployeeDetails.ToListAsync();
             return View(employees);
         }
 
@@ -30,29 +28,19 @@ namespace TestingApplication.Controllers
         [HttpPost]
         public async Task<IActionResult> Create(Employee emp)
         {
-            var client = new HttpClient();
-
-            var baseUrl = GetBaseUrl();
-
-            var response = await client.PostAsJsonAsync(
-                $"{baseUrl}/api/employee", emp);
-
-            if (response.IsSuccessStatusCode)
-            {
-                return RedirectToAction("Index");
-            }
-
-            return View(emp);
+            _context.EmployeeDetails.Add(emp);
+            await _context.SaveChangesAsync();
+            return RedirectToAction("Index");
         }
 
         public async Task<IActionResult> Delete(int id)
         {
-            var client = new HttpClient();
-
-            var baseUrl = GetBaseUrl();
-
-            await client.DeleteAsync($"{baseUrl}/api/employee/{id}");
-
+            var emp = await _context.EmployeeDetails.FindAsync(id);
+            if (emp != null)
+            {
+                _context.EmployeeDetails.Remove(emp);
+                await _context.SaveChangesAsync();
+            }
             return RedirectToAction("Index");
         }
     }
